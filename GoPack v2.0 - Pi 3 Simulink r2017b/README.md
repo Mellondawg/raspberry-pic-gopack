@@ -76,7 +76,6 @@ To run a model on the Raspberry Pi to view data and adjust the model in real-tim
 
 The Simulink blocks included in this repository use the WiringPi library to access Raspberry Pi functions not included in the standard blocks included with the Mathworks toolbox - specifically control over SPI communication.
 
-
 Make sure that setBuildArgs.m is included in the active directory. This file is included in the Simulink Scripting section of this repository.
 
 ### 2) Using GoPack s-Functions to handle sensors and actuators
