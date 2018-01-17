@@ -8,11 +8,11 @@ Last updated: 12/04/2017
 ## Raspberry Pi Setup: 
 
 ### 1) Installing support packages: (for starting from scratch)
-The RaspberryPi boots off of an SD card with the MATLAB Support Package and operating system installed.  The MATLAB support packages and are downloaded in MATLAB, and written to the Pi with a USB SD reader/writer. All remaining programming is done over wifi. The package can be found in MATLAB under Add-Ons drop-down. Choose install from internet, choose Raspberry Pi, check all packages available for Pi, and follow the instructions. You will be guided to install your micro SD card in the USB card reader, and install the Rapberry Pi OS “Raspbian” with Matlab support packages for the appropriate Pi model. The latest version of GoPack uses Pi 3 Model B. 
+The RaspberryPi boots off of an SD card with the MATLAB Support Package and operating system installed.  The MATLAB support packages are downloaded in MATLAB, and written to the Pi with a USB SD reader/writer. All remaining programming is done over wifi. The package can be found in MATLAB under the Add-Ons drop-down. Choose install from internet, choose Raspberry Pi, check all packages available for Pi, and follow the instructions. You will be guided to install your micro SD card in the USB card reader, and install the Rapberry Pi OS “Raspbian” with Matlab support packages for the appropriate Pi model. The latest version of GoPack uses Pi 3 Model B. 
 
 When installing the Raspbian image onto the SD Card, if you follow the MATLAB Hardware Support walkthrough all the way through, then you can set up WiFi and SSH access. The Pi 3 Model B has built-in WiFi capabilities. The SSH access has pi as the user and raspberry as the default password.
 
-This requires booting the Pi up. This is done by inserting the SD card that contains the Raspbian OS, connecting any additional peripherals (none required), and plugging in a micro USB power source.
+This requires booting the Pi up, which is done by inserting the SD card that contains the Raspbian OS, connecting any additional peripherals (none required), and plugging in a micro USB power source.
 
 Make note of the IP address that was assigned to the Pi 3.
 
@@ -20,6 +20,8 @@ Make note of the IP address that was assigned to the Pi 3.
 Now on the PC, you need to be able to log in via SSH to have access to the Pi command prompt over the WLAN. Here you can download an executable called “Putty” to do so. http://www.chiark.greenend.org.uk/~sgtatham/putty/download.html
 Save the executable in an accessible location, you will use it frequently. 
 Run Putty. Click connection on the tree, and change “Seconds between keepalives” to 30 in order to keep the connection from timing out. Click Session in the tree, type in the IP address, highlight defaulty and save. You can now click open, and it will save the IP for next time. If you get a security alert, click yes. The default username and password are pi and raspberry (note the password will not show in the command window). 
+
+If you are familiar with Bash, or any other Linux-based command lines, feel free to use those for SSH access instead.
 
 ### 3) Installing GPIO Interface Library wiringPi
 The driver blocks used for PWM, ADC and Encoder inputs use the library called wiringPi www.wiringpi.com. To install wiringPi, git must first be installed. The standard image that MATLAB uses for Pi 3 already contains git.
@@ -40,7 +42,7 @@ git pull origin
 ```
 Note: You must move the items within the wiringPi-GoPack directory that is created, up one level. Meaning the contents of the wiringPi-GoPack must be moved to the level where the wiringPi-GoPack directory is. This can be done by:
 
-'sudo mv wiringPi-GoPack/** ./pi' (only type one asterisk, not two, MD formatting required me to type two here)
+`sudo mv wiringPi-GoPack/** ./pi` (only type one asterisk, not two, MD formatting required me to type two here)
 
 Shutting the Pi down:
 When connected with SSH via Putty, type this to shut down safely.  
@@ -72,8 +74,7 @@ In the Simulink model window, type "inf" for the simulation time, and set the mo
 
 To run a model on the Raspberry Pi to view data and adjust the model in real-time, press the 'play' arrow button. To send a model to the Raspberry Pi to run independently of the host PC, click "Deploy to Hardware" on the far right of the control bar.
 
-The Simulink blocks included in this repository use the WiringPi library to access Raspberry Pi functions not included in the standard blocks included with the Mathworks toolbox - control over SPI communication specifically.
-
+The Simulink blocks included in this repository use the WiringPi library to access Raspberry Pi functions not included in the standard blocks included with the Mathworks toolbox - specifically control over SPI communication.
 
 Make sure that setBuildArgs.m is included in the active directory. This file is included in the Simulink Scripting section of this repository.
 
@@ -92,3 +93,55 @@ The "SPI_bytes_to_outputs" block converts the received byte vector into float or
 Note that a single sample delay function is required before the input to the serial transfer subsystem made up of these three blocks. The model will form an algebraic loop and will not run if the delay is not included.
 
 It is recommended to use the provided PID position control model for reference. It uses encoder feedback (500 counts/turn) to drive a DC motor while logging data from 5 simultaneous analog inputs. This controller was successfully tested with a Maxon EC30 motor using an ESCON 50/5 motor driver.
+
+## Additional Information
+
+### 1) MATLAB and Simulink Upgrade Troubleshooting
+MATLAB versions are released bi-annually, and usually contain upgrades to Simulink as well. When installing this repository on a different version, it may require you to delete the "slprj" folder. This folder is created by MATLAB on execution, and houses "files generated by Simulink diagram updates and model builds." Becuase this folder had been procedurally generated using MATLAB, deleting it and allowing it to be re-generated should lead to successful execution.
+
+If issues persist in the newer version, then we would recommend creating a new Simulink model, copying over the model that had worked in the previous iteration, and remaking the S-function blocks. All parameters needed for creation should be viewable from the older version.
+
+Additionally, if the S-Function builder of Simulink is unable to detect the supported compiler that is being used, please ccheck out this MATLAB Answers link, which details how entering these two commands should help (they only have to be entered once, not every time you run the model): 
+```
+>> rtwMKCFG_out=rtwmakecfg
+>> mex(['-I' rtwMKCFG_out.includePath{:}], ['-I' rtwMKCFG_out.sourcePath{:}], ['-L' rtwMKCFG_out.linkLibsObjs{:}], 'yourSFunctionName.c', 'yourSFunctionName_wrapper.c', '-lfixedpoint')
+```
+https://www.mathworks.com/matlabcentral/answers/92279-why-do-i-get-an-error-when-i-use-the-s-function-builder-in-64-bit-simulink-with-the-windows-sdk-7-1?s_tid=gn_loc_drop
+
+### 2) Linux Tips
+If you would like to learn more about basic Linux commands, and how they could be used to help navigate the Raspberry Pi, or gather RAM and CPU usage, please check out: 
+
+Linux man page: https://linux.die.net/man/
+Contains information about all of the Linux commands. Particularly useful are: cd, ls, mv, ssh, and top (which shows RAM usage).
+
+htop: http://hisham.hm/htop/
+An interactive process viewer for Unix that can show core utilization.
+
+### 3) Hardware Specifications
+This table is created from information available on http://socialcompare.com/en/comparison/raspberrypi-models-comparison and https://www.raspberrypi.org/
+
+| Model         | Raspberry Pi Zero W | Pi 3 Model B       | Pi 2 Model B       |
+|---------------|---------------------|--------------------|--------------------|
+| Release Date  | Feb 28, 2017        | Feb 29, 2017       | Feb 1, 2015        |
+| Price         | $10                 | $35                | $35                |
+| SOC Type      | Broadcom BCM        | Broadcom BCM       | Broadcom BCM       |
+| Core Type     | ARM1176JZF-S        | Cortex-A53 64-bit  | Cortex-A7          |
+| No. of Cores  | 1                   | 4                  | 4                  |
+| GPU           | VideoCore IV        | VideoCore IV       | VideoCore IV       |
+| CPU Clock     | 1 GHz               | 1.2 GHz            | 900 MHz            |
+| RAM           | 512 MB              | 1 GB               | 1 GB               |
+| USB Ports     | Micro & micro OTG   | 4                  | 4                  |
+| HDMI          | Mini                | Yes                | Yes                |
+| I2C/SPI       | Yes                 | Yes                | Yes                |
+| GPIO          | Yes                 | Yes                | Yes                |
+| Camera        | Yes                 | Yes                | Yes                |
+| SD            | microSD             | microSD            | microSD            |
+| Wi-Fi         | 802.11n             | 802.11n            | No                 |
+| Bluetooth     | 4.1                 | 4.1 LE             | No                 |
+| Ethernet Port | No                  | Yes                | Yes                |
+| Height        | 1.18 in (30mm)      | 2.22 in (56.5 mm)  | 3.37 in (85.6 mm)  |
+| Width         | 2.55 in (65 mm)     | 3.37 in (85.6 mm)  | 2.22 in (56.5 mm)  |
+| Depth         | 0.19685 in (5 mm)   | 0.66929 in (17 mm) | 0.66929 in (17 mm) |
+| Weight        | 0.31746 oz. (9 g)   | 1.58 oz. (45 g)    | 1.58 oz. (45 g)    |
+
+To gather information about the RAM and CPU usage, check out the top and htop Linux commands.
