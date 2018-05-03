@@ -2,7 +2,7 @@
 ## Makefile generated for Simulink model 'testmodel'. 
 ## 
 ## Makefile     : testmodel.mk
-## Generated on : Thu Feb 22 00:32:54 2018
+## Generated on : Fri Feb 23 12:26:40 2018
 ##  version:  
 ## 
 ## Build Info:
@@ -359,18 +359,6 @@ $(PRODUCT) : $(OBJS) $(PREBUILT_OBJS) $(MAIN_OBJ)
 #---------------------
 # SOURCE-TO-OBJECT
 #---------------------
-
-%.c.o : %.c
-	$(CC) $(CFLAGS) -o $@ $<
-
-
-%.s.o : %.s
-	$(AS) $(ASFLAGS) -o $@ $<
-
-
-%.cpp.o : %.cpp
-	$(CPP) $(CPPFLAGS) -o $@ $<
-
 
 %.c.o : %.c
 	$(CC) $(CFLAGS) -o $@ $<
